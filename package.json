@@ -1,0 +1,28 @@
+{
+  "name": "tors_core",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/som911/TORS_CORE.git"
+  },
+  "author": "som911",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/som911/TORS_CORE/issues"
+  },
+  "homepage": "https://github.com/som911/TORS_CORE#readme",
+  "devDependencies": {
+    "@types/node": "^25.9.3"
+  }
+}
