@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/som911/TORS_CORE#readme",
   "devDependencies": {
-    "@types/node": "^25.9.3"
+    "@types/node": "^25.9.3",
+    "typescript": "^6.0.3"
   }
 }

@@ -2,7 +2,7 @@ type Bin2 = 0 | 1 | 2 | 3;
 type Bin3 = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 //@ts-ignore
-export const bin2 = (a: any, b: any): Bin2 => (a << 1) | b
+export const bin2 = (a: any, b: any):Bin2 => (a << 1) | b
 //@ts-ignore
 export const bin3 = (a:any, b:any, c:any):Bin3 => (a << 2) | (b << 1) | c
 

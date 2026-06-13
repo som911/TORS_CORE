@@ -6,6 +6,19 @@ type TorsArgs = {
     maxLogsLength?: number
     sendResultUrl?: string
 }
+type TORS = {
+    logs: Log[]
+    logs2: Log2[]
+    createLog: (find: string, act?: string, args?: any) => void
+    markFunction: (instance: any, name: string, args?: any) => Log
+    markSwitcher: (instance: any, name: string, switchIndex: any) => void
+    getFunctionsDetector: (functions: Record<string, () => void>, path: string) => Record<string, () => void>
+    getStateDetector: (state: State, path: string) => State
+    enableLoggingForClassInstance: (instance: any, ignoreMethodNames?: string[]) => void
+    onStopLog: () => void
+    startMarkCallback: (title?: string) => Log2
+    endMarkCallback: (log2: Log2) => void
+}
 type Log = {
     act: string
     find: string
@@ -21,6 +34,7 @@ type Log2 = {
     startFrame: number
     endFrame: number
 }
+
 type State = Record<string, any> | any[] // {} or []; Conteiner for values;
 
 function isObjOrArr(value: any): boolean {
@@ -33,7 +47,7 @@ export default ({
     maxCallStack = 2500,
     maxLogsLength = 5000,
     sendResultUrl = '',
-}: TorsArgs) => {
+}: TorsArgs):TORS =>  {
     // main stack;
     const logs = [] as Log[]
     let deep = 0
@@ -61,7 +75,7 @@ export default ({
         }
         return log
     }
-    function startMarkCallback(title = '⏰'):Log2 {
+    function startMarkCallback(title = '⏰'): Log2 {
         getLog({
             act: 'fun',
             find: title,
@@ -76,13 +90,13 @@ export default ({
 
         return log2;
     }
-    function endMarkCallback(log2:Log2) {
+    function endMarkCallback(log2: Log2) {
         log2.endFrame = logs.length
         log2.time = performance.now() - log2.time
     }
 
-    
-    function getStateDetector(state:State, path:string) {
+
+    function getStateDetector(state: State, path: string) {
         // state - primitive strucutre tree
 
         // if state has [] or {}
@@ -94,7 +108,7 @@ export default ({
                 throw new Error(`${path}.${key}` + ' can not be "function"')
             }
             if (isObjOrArr(value)) {
-                 //@ts-ignore
+                //@ts-ignore
                 state[key] = getStateDetector(value, `${path}.${key}`)
             }
         }
@@ -322,7 +336,7 @@ export default ({
         })
     }
 
-    const getProxyFun = (fun, find) => {
+    const getProxyFun = (fun: () => void, find: string) => {
         //console.log({namef:find})
         if (getType(fun) !== 'function') {
             throw new Error(`${find}  is not function. target type: ${getType(fun)}`)
@@ -360,7 +374,7 @@ export default ({
             },
         })
     }
-    function getFunctionsDetector(functions, path) {
+    function getFunctionsDetector(functions: Record<string, () => void>, path: string) {
         // functions = flat {} or [] with functions
         for (const key in functions) {
             const find = `${path}.${key}`
@@ -378,7 +392,8 @@ export default ({
             },
         })
     }
-    function enableLoggingForClassInstance(instance, igoneMethods = []) {
+    //  instance = class instance
+    function enableLoggingForClassInstance(instance: any, ignoreMethodNames:string[] = []) {
         let path = instance.constructor.name // class App = 'App'
         if (instance.scope) {
             path += `-${instance.scope}` // 'App-1' for copy
@@ -405,7 +420,7 @@ export default ({
                 typeof proto[key] === 'function' &&
                 key !== 'constructor' &&
                 //key !== 'destroy' && // ignore destroy method
-                !igoneMethods.includes(key),
+                !ignoreMethodNames.includes(key),
         )
         for (let funName of methodNames) {
             const originalMethod = instance[funName]
@@ -427,10 +442,9 @@ export default ({
         // }
     }
 
-    function markFunction(instance, name, args = '') {
+    function markFunction(instance: any, name: string, args = '') {
         if (!instance || typeof instance.find !== 'string') {
-            console.error('Wrong instance argument, markFunction() with name:' + name)
-            return
+            throw new Error('Wrong instance argument, markFunction() with name:' + name)
         }
         const path = instance.find + `.${name}`;
         const log = getLog({
@@ -440,7 +454,7 @@ export default ({
         })
         return log;
     }
-    function markSwitcher(instance, name, switchIndex) {
+    function markSwitcher(instance: any, name: string, switchIndex: any) {
         if (!instance) {
             console.error('Wrong instance argument, markSwitcher() with name:' + name)
             return
@@ -454,7 +468,7 @@ export default ({
     }
 
 
-    function createLog(find, act = 'create', args = '') {
+    function createLog(find:string, act = 'create', args = '') {
         getLog({
             act,
             find,
@@ -464,7 +478,7 @@ export default ({
     // GLOBAL ERROR HANDLER
     if (typeof process !== 'undefined' && process.on) {
         // Node catch global error
-        process.on('uncaughtException', (error:any) => {
+        process.on('uncaughtException', (error: any) => {
             getLog({
                 act: 'error',
                 find: 'uncaughtException',
@@ -492,6 +506,7 @@ export default ({
             })
         })
     }
+    getLog({ act: 'fun', find: 'start' })
     return {
         logs,
         logs2,
